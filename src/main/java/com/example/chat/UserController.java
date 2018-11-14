@@ -1,10 +1,7 @@
 package com.example.chat;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
@@ -21,6 +18,7 @@ public class UserController {
     @PostMapping
     public User create(@RequestBody User user) {
         //TODO hash passwords
+        //TODO implement real security
         user.setTimeCreated(new Timestamp(System.currentTimeMillis()));
         return userRepository.save(user);
     }
@@ -34,8 +32,15 @@ public class UserController {
 
         authUser.setSessionId(this.randString());
         userRepository.save(authUser);
-        return authUser.getSessionId();
+        return "{ token: \"" + authUser.getSessionId() + "\" }";
         //TODO expire session id
+    }
+
+    @GetMapping
+    public User getUser(@RequestHeader("token") String sessionId) throws IncorrectLoginException {
+        return userRepository.findBySessionId(sessionId).orElseThrow(
+                () -> new IncorrectLoginException("invalid session token")
+        );
     }
 
     private String randString() {
