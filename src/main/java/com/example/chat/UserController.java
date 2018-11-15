@@ -1,12 +1,12 @@
 package com.example.chat;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.util.Random;
 
 @RestController
 @RequestMapping("/user")
@@ -14,43 +14,32 @@ public class UserController {
 
     @Autowired
     UserRepository userRepository;
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
-    @PostMapping
-    public User create(@RequestBody User user) {
-        //TODO hash passwords
-        //TODO implement real security
+    @PostMapping("/create")
+    public ResponseEntity create(@RequestBody User user) {
         user.setTimeCreated(new Timestamp(System.currentTimeMillis()));
-        return userRepository.save(user);
-    }
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        try {
+            userRepository.findByName(user.getName()).orElseThrow(
+                    () -> new UserNotFoundException("User with username " + user.getName() + " not found")
+            );
+        }
+        catch (UserNotFoundException ex) {
+            userRepository.save(user);
+            user.setPassword(null);
+            return ResponseEntity.ok(user);
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user with username \"" + user.getName() + "\" already exists");
 
-    @PostMapping("/login")
-    public String login(@RequestBody User user) throws IncorrectLoginException {
-
-        User authUser = userRepository.findByNameAndPassword(user.getName(), user.getPassword()).orElseThrow(
-                () -> new IncorrectLoginException("incorrect login")
-        );
-
-        authUser.setSessionId(this.randString());
-        userRepository.save(authUser);
-        return "{ token: \"" + authUser.getSessionId() + "\" }";
-        //TODO expire session id
     }
 
     @GetMapping
-    public User getUser(@RequestHeader("token") String sessionId) throws IncorrectLoginException {
-        return userRepository.findBySessionId(sessionId).orElseThrow(
-                () -> new IncorrectLoginException("invalid session token")
+    public User getUser(@RequestBody User user) throws IncorrectLoginException {
+        return userRepository.findByName(user.getName()).orElseThrow(
+                () -> new IncorrectLoginException("invalid name")
         );
     }
 
-    private String randString() {
-        String CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890,./;'[]\\-=`~<>?:{}|_+!@#$%^&*()\"";
-        StringBuilder builder = new StringBuilder();
-        Random rnd = new Random();
-        while (builder.length() < 18) { // length of the random string.
-            int index = (int) (rnd.nextFloat() * CHARS.length());
-            builder.append(CHARS.charAt(index));
-        }
-        return builder.toString();
-    }
 }

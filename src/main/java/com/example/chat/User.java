@@ -1,7 +1,5 @@
 package com.example.chat;
 
-import javassist.bytecode.ByteArray;
-
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -10,7 +8,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table(name="users")
-public class User {
+public class User{
 
     @Id
     @GeneratedValue
@@ -18,7 +16,6 @@ public class User {
     private String name;
     private Timestamp timeCreated;
     private String password;
-    private String sessionId;
 
     private User() {
 
@@ -62,11 +59,4 @@ public class User {
         this.password = password;
     }
 
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
 }
