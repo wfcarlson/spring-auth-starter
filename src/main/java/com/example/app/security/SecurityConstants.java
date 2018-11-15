@@ -1,4 +1,4 @@
-package com.example.chat.security;
+package com.example.app.security;
 
 public class SecurityConstants {
 

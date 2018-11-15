@@ -1,7 +1,6 @@
-package com.example.chat.security;
+package com.example.app.security;
 
 import io.jsonwebtoken.Jwts;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static com.example.chat.security.SecurityConstants.HEADER_STRING;
-import static com.example.chat.security.SecurityConstants.SECRET;
-import static com.example.chat.security.SecurityConstants.TOKEN_PREFIX;
+import static com.example.app.security.SecurityConstants.HEADER_STRING;
+import static com.example.app.security.SecurityConstants.SECRET;
+import static com.example.app.security.SecurityConstants.TOKEN_PREFIX;
 
 public class JWTAuthorizationFilter extends BasicAuthenticationFilter {
 
